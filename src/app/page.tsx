@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import Dashboard from "@/components/Dashboard";
-import PDFSigner from "@/components/PDFSigner";
+import InteractivePDFSigner from "@/components/InteractivePDFSigner";
 import DocumentsPage from "@/components/DocumentsPage";
 import LoginForm from "@/components/LoginForm";
 import SignupForm from "@/components/SignupForm";
@@ -31,10 +31,10 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-base-200 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <span className="loading loading-spinner loading-lg text-primary"></span>
-          <p className="mt-4 text-base-content/70">Loading...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
         </div>
       </div>
     );
@@ -57,13 +57,13 @@ export default function Home() {
         />
       )}
       
-      {currentView === 'signer' && currentPDF && (
-        <PDFSigner
-          pdfUrl={currentPDF.url}
-          fileName={currentPDF.name}
-          onBack={handleBackToDashboard}
-        />
-      )}
+            {currentView === 'signer' && currentPDF && (
+              <InteractivePDFSigner
+                pdfUrl={currentPDF.url}
+                fileName={currentPDF.name}
+                onBack={handleBackToDashboard}
+              />
+            )}
       
       {currentView === 'documents' && (
         <DocumentsPage onBack={handleBackToDashboard} />

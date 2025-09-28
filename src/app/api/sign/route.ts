@@ -20,15 +20,32 @@ interface SignaturePosition {
 }
 
 export async function POST(req: NextRequest) {
-  console.log('PDF signing API called');
+  console.log('=== PDF signing API called ===');
+  console.log('Request method:', req.method);
+  console.log('Request URL:', req.url);
+  console.log('Request headers:', Object.fromEntries(req.headers.entries()));
+  
   try {
-    const body = await req.json();
+    let body;
+    try {
+      body = await req.json();
+      console.log('✅ JSON parsing successful');
+    } catch (jsonError) {
+      console.error('❌ JSON parsing failed:', jsonError);
+      return NextResponse.json(
+        { error: "Invalid JSON in request body" },
+        { status: 400 }
+      );
+    }
+    
     console.log('Request body received:', { 
       hasPdfUrl: !!body.pdfUrl, 
       hasSignature: !!body.signatureDataUrl, 
       positionsCount: body.signaturePositions?.length || 0,
       userId: body.userId,
-      fileName: body.fileName
+      fileName: body.fileName,
+      pdfUrlLength: body.pdfUrl?.length || 0,
+      signatureLength: body.signatureDataUrl?.length || 0
     });
     
     const { pdfUrl, signatureDataUrl, signaturePositions, userId, fileName } = body;
@@ -49,18 +66,28 @@ export async function POST(req: NextRequest) {
     const pdfBytes = await pdfResponse.arrayBuffer();
     const pdfDoc = await PDFDocument.load(pdfBytes);
     
-    // Convert signature data URL to PNG bytes
-    const signatureResponse = await fetch(signatureDataUrl);
-    const signatureBytes = await signatureResponse.arrayBuffer();
-    
-    // Embed the signature image
-    let signatureImage;
-    try {
-      signatureImage = await pdfDoc.embedPng(signatureBytes);
-    } catch (error) {
-      // If PNG fails, try JPEG
-      signatureImage = await pdfDoc.embedJpg(signatureBytes);
-    }
+           // Convert signature data URL to PNG bytes
+           console.log('Processing signature data URL...');
+           const signatureResponse = await fetch(signatureDataUrl);
+           const signatureBytes = await signatureResponse.arrayBuffer();
+           console.log(`Signature data size: ${signatureBytes.byteLength} bytes`);
+           
+           // Embed the signature image
+           let signatureImage;
+           try {
+             console.log('Attempting to embed as PNG...');
+             signatureImage = await pdfDoc.embedPng(signatureBytes);
+             console.log('✅ PNG embedding successful');
+           } catch (error) {
+             console.log('PNG failed, trying JPEG...');
+             // If PNG fails, try JPEG
+             signatureImage = await pdfDoc.embedJpg(signatureBytes);
+             console.log('✅ JPEG embedding successful');
+           }
+           
+           // Get signature image dimensions
+           const { width: sigWidth, height: sigHeight } = signatureImage.size();
+           console.log(`Embedded signature dimensions: ${sigWidth} x ${sigHeight}`);
 
     const pages = pdfDoc.getPages();
     const totalPages = pages.length;
@@ -81,26 +108,33 @@ export async function POST(req: NextRequest) {
         const page = pages[pageIndex];
         const { width: pageWidth, height: pageHeight } = page.getSize();
         
+        console.log(`\n=== SIGNATURE ${index + 1} PLACEMENT ===`);
         console.log(`Page ${pageIndex + 1} dimensions: ${pageWidth} x ${pageHeight}`);
-        console.log(`Signature position: x=${position.x}, y=${position.y}, w=${position.width}, h=${position.height}`);
+        console.log(`UI signature position: x=${position.x}, y=${position.y}, w=${position.width}, h=${position.height}`);
         
-        // Convert coordinates (PDF coordinate system has origin at bottom-left)
+        // PDF coordinate system has origin at bottom-left, but our UI uses top-left
+        // Convert Y coordinate from top-left to bottom-left
         const yPosition = pageHeight - position.y - position.height;
         
-        console.log(`Converted Y position: ${yPosition} (from ${position.y})`);
+        console.log(`Coordinate conversion:`);
+        console.log(`  - UI Y (top-left): ${position.y}`);
+        console.log(`  - PDF Y (bottom-left): ${yPosition}`);
+        console.log(`  - Calculation: ${pageHeight} - ${position.y} - ${position.height} = ${yPosition}`);
         
         // Ensure signature is within page bounds
         const finalX = Math.max(0, Math.min(position.x, pageWidth - position.width));
         const finalY = Math.max(0, Math.min(yPosition, pageHeight - position.height));
         
-        console.log(`Final position: x=${finalX}, y=${finalY}`);
-        
-        page.drawImage(signatureImage, {
-          x: finalX,
-          y: finalY,
-          width: position.width,
-          height: position.height,
-        });
+        console.log(`Final bounded position: x=${finalX}, y=${finalY}`);
+        console.log(`Signature size: ${position.width} x ${position.height}`);
+        console.log(`=== END SIGNATURE ${index + 1} ===\n`);
+             
+             page.drawImage(signatureImage, {
+               x: finalX,
+               y: finalY,
+               width: position.width,
+               height: position.height,
+             });
         
         console.log(`✅ Signature ${index + 1} placed on page ${pageIndex + 1}`);
       } else {

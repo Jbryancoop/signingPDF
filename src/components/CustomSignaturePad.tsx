@@ -24,9 +24,8 @@ export default function CustomSignaturePad({ onEnd }: CustomSignaturePadProps) {
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
-    // Clear canvas with white background
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Clear canvas with transparent background
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
   }, []);
 
   const getEventPos = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
@@ -82,13 +81,7 @@ export default function CustomSignaturePad({ onEnd }: CustomSignaturePadProps) {
     if (isDrawing) {
       setIsDrawing(false);
       setLastPoint(null);
-      
-      // Call onEnd with the canvas data
-      const canvas = canvasRef.current;
-      if (canvas) {
-        const dataUrl = canvas.toDataURL('image/png');
-        onEnd(dataUrl);
-      }
+      // Don't auto-save on pen lift - user needs to click "Save Signature" button
     }
   };
 
@@ -97,22 +90,22 @@ export default function CustomSignaturePad({ onEnd }: CustomSignaturePadProps) {
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx) return;
 
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Clear with transparent background instead of white
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
   };
 
   return (
-    <div className="card bg-base-100 shadow-lg border border-base-300">
-      <div className="card-body">
-        <div className="mb-4">
-          <p className="text-sm text-base-content/70">Draw your signature below:</p>
+    <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+      <div className="p-4">
+        <div className="mb-3">
+          <p className="text-sm text-gray-600">Draw your signature below</p>
         </div>
         
         <canvas
           ref={canvasRef}
           width={400}
           height={200}
-          className="border border-base-300 rounded-lg cursor-crosshair touch-none w-full bg-white"
+          className="border border-gray-300 rounded-md cursor-crosshair touch-none w-full bg-white"
           style={{ touchAction: 'none' }}
           onMouseDown={startDrawing}
           onMouseMove={draw}
@@ -123,13 +116,13 @@ export default function CustomSignaturePad({ onEnd }: CustomSignaturePadProps) {
           onTouchEnd={stopDrawing}
         />
         
-        <div className="card-actions justify-between mt-4">
+        <div className="flex justify-between mt-4 space-x-3">
           <button
             onClick={clearCanvas}
-            className="btn btn-outline btn-error"
+            className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
             Clear
           </button>
@@ -141,10 +134,10 @@ export default function CustomSignaturePad({ onEnd }: CustomSignaturePadProps) {
                 onEnd(dataUrl);
               }
             }}
-            className="btn btn-primary"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 13l4 4L19 7" />
             </svg>
             Save Signature
           </button>

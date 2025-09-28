@@ -24,7 +24,7 @@ export const db = getFirestore(app);
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   try {
     // Connect to Auth emulator
-    connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
+    connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
     console.log('✅ Connected to Auth emulator');
   } catch (error) {
     console.log('Auth emulator already connected or failed:', error);
@@ -32,7 +32,7 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   
   try {
     // Connect to Firestore emulator
-    connectFirestoreEmulator(db, 'localhost', 8080);
+    connectFirestoreEmulator(db, '127.0.0.1', 8080);
     console.log('✅ Connected to Firestore emulator');
   } catch (error) {
     console.log('Firestore emulator already connected or failed:', error);
@@ -40,7 +40,7 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   
   try {
     // Connect to Storage emulator
-    connectStorageEmulator(storage, 'localhost', 9199);
+    connectStorageEmulator(storage, '127.0.0.1', 9199);
     console.log('✅ Connected to Storage emulator');
   } catch (error) {
     console.log('Storage emulator already connected or failed:', error);

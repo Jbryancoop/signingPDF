@@ -22,11 +22,23 @@ export async function POST(req: NextRequest) {
     const pdfBytes = await pdfResponse.arrayBuffer();
     const pdfDoc = await PDFDocument.load(pdfBytes);
     
-    const pageCount = pdfDoc.getPageCount();
+    const pages = pdfDoc.getPages();
+    const pageCount = pages.length;
+    
+    // Get page dimensions for better signature placement
+    const pageDimensions = pages.map((page, index) => ({
+      page: index + 1,
+      width: page.getSize().width,
+      height: page.getSize().height
+    }));
+
+    console.log(`PDF has ${pageCount} pages`);
 
     return NextResponse.json({ 
       success: true,
       pageCount,
+      pageDimensions,
+      fileSize: pdfBytes.byteLength,
       message: "PDF info retrieved successfully"
     });
 

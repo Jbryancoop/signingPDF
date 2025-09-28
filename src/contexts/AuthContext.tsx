@@ -51,11 +51,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signIn = async (email: string, password: string) => {
     setLoading(true);
     try {
-      console.log('AuthContext: Attempting signInWithEmailAndPassword');
+      console.log('AuthContext: Attempting signInWithEmailAndPassword for:', email);
+      console.log('AuthContext: Auth instance:', auth);
+      console.log('AuthContext: Auth config:', auth.config);
+      
       const result = await signInWithEmailAndPassword(auth, email, password);
       console.log('AuthContext: Sign in successful', result.user.uid);
-    } catch (error) {
-      console.error('AuthContext: Sign in failed', error);
+    } catch (error: any) {
+      console.error('AuthContext: Sign in failed');
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
+      console.error('Full error:', error);
       throw error;
     } finally {
       setLoading(false);
@@ -65,11 +71,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signUp = async (email: string, password: string) => {
     setLoading(true);
     try {
-      console.log('AuthContext: Attempting createUserWithEmailAndPassword');
+      console.log('AuthContext: Attempting createUserWithEmailAndPassword for:', email);
+      console.log('AuthContext: Password length:', password.length);
+      
       const result = await createUserWithEmailAndPassword(auth, email, password);
       console.log('AuthContext: Sign up successful', result.user.uid);
-    } catch (error) {
-      console.error('AuthContext: Sign up failed', error);
+    } catch (error: any) {
+      console.error('AuthContext: Sign up failed');
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
+      console.error('Full error:', error);
       throw error;
     } finally {
       setLoading(false);

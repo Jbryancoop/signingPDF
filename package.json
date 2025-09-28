@@ -9,7 +9,9 @@
     "lint": "eslint",
     "emulators": "firebase emulators:start",
     "emulators:ui": "firebase emulators:start --only auth,firestore,storage",
-    "dev:emulator": "concurrently \"npm run emulators:ui\" \"npm run dev\""
+    "dev:emulator": "concurrently \"npm run emulators:ui\" \"npm run dev\"",
+    "build:firebase": "next build && next export",
+    "deploy:firebase": "npm run build:firebase && firebase deploy --only hosting"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
@@ -21,6 +23,7 @@
     "lucide-react": "^0.544.0",
     "next": "15.5.4",
     "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^3.11.174",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-dropzone": "^14.3.8",
@@ -29,8 +32,10 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@netlify/plugin-nextjs": "^5.7.2",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pdfjs-dist": "^2.10.377",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "concurrently": "^9.2.1",
