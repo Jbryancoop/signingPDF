@@ -1,0 +1,28 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Allow authenticated users to upload and read their own files
+    match /users/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Allow authenticated users to upload PDFs to sign
+    match /pdfs/{userId}/{fileName} {
+      allow read, write: if request.auth != null && request.auth.uid == userId
+        && resource.contentType.matches('application/pdf');
+    }
+    
+    // Allow authenticated users to upload signature images
+    match /signatures/{userId}/{fileName} {
+      allow read, write: if request.auth != null && request.auth.uid == userId
+        && resource.contentType.matches('image/.*');
+    }
+    
+    // For development: Allow all reads and writes (remove in production)
+    match /{allPaths=**} {
+      allow read, write: if true;
+    }
+  }
+}
+
